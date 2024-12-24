@@ -141,10 +141,10 @@ def is_truly_numeric_column(column):
 def plot_visualizations(data):
     # visualize only numerical columns
     numeric_columns = data.apply(is_truly_numeric_column)
-    data = data.loc[:, numeric_columns]
+    numeric_data = data.loc[:, numeric_columns]
     
     # histograms for numerical columns in the dataset
-    data.hist(bins=30, edgecolor='black')
+    numeric_data.hist(bins=30, edgecolor='black')
     plt.suptitle('Histograms of data')
     plt.show()
 
@@ -160,10 +160,44 @@ def plot_visualizations(data):
     plt.title('Box plot of data')
     plt.show()
 
+    # histogram for crime frequency by hour
+    plt.figure(figsize=(10, 6))
+    sns.histplot(data['TIME OCC'], bins=24, kde=False, color='blue')
+    plt.title('Crime Frequency by Hour')
+    plt.xlabel('Hour of Occurrence')
+    plt.ylabel('Number of Crimes')
+    plt.show()
+
+    # histogram for victim age distribution
+    plt.figure(figsize=(10, 6))
+    sns.histplot(data['Vict Age'], bins=20, kde=True, color='green')
+    plt.title('Victim Age Distribution')
+    plt.xlabel('Age')
+    plt.ylabel('Number of Victims')
+    plt.show()
+
+    # box plot for victim age distribution by top crime types
+    plt.figure(figsize=(12, 8))
+    top_crimes = data['Crm Cd Desc'].value_counts().head(5).index
+    sns.boxplot(x='Crm Cd Desc', y='Vict Age', data=data[data['Crm Cd Desc'].isin(top_crimes)], palette='Set3')
+    plt.title('Victim Age Distribution by Top Crime Types')
+    plt.xlabel('Crime Type')
+    plt.ylabel('Victim Age')
+    plt.xticks(rotation=45)
+    plt.show()
+
+    # histogram for crime frequency by area
+    plt.figure(figsize=(10, 6))
+    sns.histplot(data['AREA'], bins=15, kde=False, color='purple')
+    plt.title('Crime Frequency by Area')
+    plt.xlabel('Area')
+    plt.ylabel('Number of Crimes')
+    plt.show()
+
 def main():
     data_filtered, X_train_weapon, X_test_weapon, y_train_weapon, y_test_weapon, X_train_crime, X_test_crime, y_train_crime, y_test_crime = data_preparation()
-    # model_weapon_training(X_train_weapon, X_test_weapon, y_train_weapon, y_test_weapon)
-    # model_crime_training(X_train_crime, X_test_crime, y_train_crime, y_test_crime)
+    model_weapon_training(X_train_weapon, X_test_weapon, y_train_weapon, y_test_weapon)
+    model_crime_training(X_train_crime, X_test_crime, y_train_crime, y_test_crime)
     plot_visualizations(data_filtered)
 
 if __name__ == "__main__":
