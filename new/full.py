@@ -44,13 +44,6 @@ plt.xlabel('Age at Release')
 plt.ylabel('Frequency')
 plt.show()
 
-# Release Year vs Crime Type
-plt.figure(figsize=(10, 6))
-sns.boxplot(x='Crime Type', y='Release Year', data=df, palette='Set2')
-plt.xticks(rotation=45)
-plt.title('Release Year vs Crime Type')
-plt.show()
-
 # Gender Distribution
 gender_counts = df['Gender'].value_counts()
 plt.figure(figsize=(6, 6))
@@ -63,12 +56,24 @@ plt.show()
 
 # Correlation Heatmap
 
-plt.figure(figsize=(10, 8))
-numeric_df = df.select_dtypes(include=['number'])  # Select only numeric columns
-sns.heatmap(numeric_df.corr(), annot=True, cmap='coolwarm', fmt='.2f')
-plt.title('Correlation Heatmap')
-plt.show()
+# Create a copy for correlation analysis
+df_corr = df.copy()
 
+# Encode categorical columns for correlation
+label_encoder = LabelEncoder()
+df_corr['Gender'] = label_encoder.fit_transform(df_corr['Gender'])
+df_corr['County of Indictment'] = label_encoder.fit_transform(df_corr['County of Indictment'])
+df_corr['Crime Type'] = label_encoder.fit_transform(df_corr['Crime Type'])
+df_corr['Return Status'] = label_encoder.fit_transform(df_corr['Return Status'])
+
+# Create correlation heatmap with all relevant columns
+plt.figure(figsize=(12, 10))
+correlation_matrix = df_corr[['Release Year', 'County of Indictment', 'Gender', 
+                            'Age at Release', 'Return Status', 'Crime Type']].corr()
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f')
+plt.title('Correlation Heatmap (All Features)')
+plt.tight_layout()
+plt.show()
 
 # --- Data Preprocessing ---
 # Encode categorical columns
@@ -127,40 +132,20 @@ plt.title('Feature Importance (Random Forest)')
 plt.show()
 
 
+# --- Model Comparison Plot ---
+model_accuracies = pd.DataFrame({
+    'Model': ['Logistic Regression', 'Random Forest'],
+    'Accuracy': [logistic_accuracy, rf_accuracy]
+})
 
-# --- Probability of Recommitting by Crime Type --- 
-
-# Predict probabilities for Logistic Regression
-proba_logistic = logistic_model.predict_proba(X_test)[:, 1]  # Probability of reoffending
-X_test['Crime Type'] = X_test['Crime Type']  # Ensure Crime Type is in the test set
-X_test['Logistic_Probability'] = proba_logistic
-
-# Predict probabilities for Random Forest
-proba_rf = rf_model.predict_proba(X_test[['Release Year', 'County of Indictment', 'Gender', 'Age at Release', 'Crime Type']])[:, 1]
-X_test['RF_Probability'] = proba_rf
-
-# Aggregate probabilities by Crime Type
-crime_type_probs = X_test.groupby('Crime Type')[['Logistic_Probability', 'RF_Probability']].mean()
-
-# Plot comparison
-plt.figure(figsize=(10, 6))
-crime_type_probs.plot(kind='bar', figsize=(10, 6), color=['blue', 'green'], alpha=0.7)
-plt.title('Probability of Recommitting by Crime Type (Logistic Regression vs Random Forest)')
-plt.ylabel('Average Probability')
-plt.xlabel('Crime Type')
-plt.xticks(rotation=45, ha='right')
-plt.legend(['Logistic Regression', 'Random Forest'])
-plt.tight_layout()
+plt.figure(figsize=(8, 6))
+sns.barplot(x='Model', y='Accuracy', data=model_accuracies, palette='viridis')
+plt.title('Model Accuracy Comparison')
+plt.xlabel('Model')
+plt.ylabel('Accuracy')
+plt.ylim(0, 1)  # Accuracy is between 0 and 1
 plt.show()
 
-# --- Evaluation ---
-# Compare accuracies
-print("Logistic Regression Accuracy:", logistic_accuracy)
-print("Random Forest Accuracy:", rf_accuracy)
-
-# Display probabilities
-print("\nAverage Probability of Recommitting by Crime Type:")
-print(crime_type_probs)
 
 
 # --- Code Quality ---
