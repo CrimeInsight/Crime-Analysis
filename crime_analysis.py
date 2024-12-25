@@ -180,17 +180,24 @@ def model_crime_visualize(model_crime_type, X_test_crime, y_test_crime):
     plt.tight_layout()
     plt.show()
 
-def is_truly_numeric_column(column):
-    try:
-        pd.to_numeric(column)  # convert the column to numeric values
-        return True  # if no error, then it is a numeric column
-    except ValueError:
-        return False # if error, then it is not a numeric column
+def remove_outliers(column):
+    # remove outliers from the column using the IQR method
+    Q1 = column.quantile(0.25)
+    Q3 = column.quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    return column[(column >= lower_bound) & (column <= upper_bound)]
 
 def plot_visualizations(data):
     # visualize only numerical columns
-    numeric_columns = data.apply(is_truly_numeric_column)
-    numeric_data = data.loc[:, numeric_columns]
+    numeric_columns = data.select_dtypes(include='number').columns
+    
+    #remove the outliers
+    for col in numeric_columns:
+        data[col] = remove_outliers(data[col])
+
+    numeric_data = data[numeric_columns]
     
     # histograms for numerical columns in the dataset
     numeric_data.hist(bins=30, edgecolor='black')
@@ -212,44 +219,44 @@ def plot_visualizations(data):
     # histogram for crime frequency by hour
     plt.figure(figsize=(10, 6))
     sns.histplot(data['TIME OCC'], bins=24, kde=False, color='blue')
-    plt.title('Crime Frequency by Hour')
-    plt.xlabel('Hour of Occurrence')
-    plt.ylabel('Number of Crimes')
+    plt.title('Crime frequency by hour')
+    plt.xlabel('Hour of occurrence')
+    plt.ylabel('Number of crimes')
     plt.show()
 
     # histogram for victim age distribution
     plt.figure(figsize=(10, 6))
     sns.histplot(data['Vict Age'], bins=20, kde=True, color='green')
-    plt.title('Victim Age Distribution')
+    plt.title('Victim age distribution')
     plt.xlabel('Age')
-    plt.ylabel('Number of Victims')
+    plt.ylabel('Number of victims')
     plt.show()
 
     # box plot for victim age distribution by top crime types
     plt.figure(figsize=(12, 8))
     top_crimes = data['Crm Cd Desc'].value_counts().head(5).index
     sns.boxplot(x='Crm Cd Desc', y='Vict Age', data=data[data['Crm Cd Desc'].isin(top_crimes)], palette='Set3', hue='Crm Cd Desc', legend=False)
-    plt.title('Victim Age Distribution by Top Crime Types')
-    plt.xlabel('Crime Type')
-    plt.ylabel('Victim Age')
+    plt.title('Victim age distribution by top crime types')
+    plt.xlabel('Crime type')
+    plt.ylabel('Victim age')
     plt.xticks(rotation=45)
     plt.show()
 
     # histogram for crime frequency by area
     plt.figure(figsize=(10, 6))
     sns.histplot(data['AREA'], bins=15, kde=False, color='purple')
-    plt.title('Crime Frequency by Area')
+    plt.title('Crime frequency by area')
     plt.xlabel('Area')
-    plt.ylabel('Number of Crimes')
+    plt.ylabel('Number of crimes')
     plt.show()
 
 def main():
     data_filtered, X_train_weapon, X_test_weapon, y_train_weapon, y_test_weapon, X_train_crime, X_test_crime, y_train_crime, y_test_crime = data_preparation()
     model_weapon = model_weapon_training(X_train_weapon, X_test_weapon, y_train_weapon, y_test_weapon)
-    # model_crime_type = model_crime_training(X_train_crime, X_test_crime, y_train_crime, y_test_crime)
-    # plot_visualizations(data_filtered)
-    # model_weapon_visualize(model_weapon, X_test_weapon, y_test_weapon)
-    # model_crime_visualize(model_crime_type, X_test_crime, y_test_crime)
+    model_crime_type = model_crime_training(X_train_crime, X_test_crime, y_train_crime, y_test_crime)
+    plot_visualizations(data_filtered)
+    model_weapon_visualize(model_weapon, X_test_weapon, y_test_weapon)
+    model_crime_visualize(model_crime_type, X_test_crime, y_test_crime)
 
 if __name__ == "__main__":
     main()
