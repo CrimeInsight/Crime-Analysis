@@ -5,8 +5,8 @@ from crime_recidivism import CrimeRecidivism
 
 def main():
     # analysis = CrimeTypeAndWeapon()
-    analysis = CrimeLocationAnalysis()
-    # analysis = CrimeRecidivism('updated_dataset_with_uneven_crime_types.csv')
+    # analysis = CrimeLocationAnalysis()
+    analysis = CrimeRecidivism('data/updated_dataset_with_uneven_crime_types.csv')
     
     analysis.execute()
 
