@@ -267,7 +267,7 @@ def visualize_clusters(data, cluster_centroids):
 
 if __name__ == "__main__":
     try:
-        file_path = "C:/Users/Kiu-Student/Desktop/Crime_Data_from_2020_to_Present_Main.csv"
+        file_path = ""
         if not file_path:
             raise ValueError("Please provide a valid file path")
 

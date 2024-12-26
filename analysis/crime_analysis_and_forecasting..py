@@ -244,7 +244,7 @@ def forecast_crimes(data):
 
 if __name__ == "__main__":
     try:
-        filepath = "C:/Users/Kiu-Student/Desktop/Crime_Data_from_2020_to_Present_Main.csv"
+        filepath = ""
         if not filepath:
             raise ValueError("Please provide a valid file path")
 
