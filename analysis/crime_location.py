@@ -43,7 +43,7 @@ class CrimeLocationAnalysis(Analysis):
             ).add_to(heatmap_map)
 
         # Save the map
-        heatmap_map.save("current_crime_heatmap.html")
+        heatmap_map.save("output/current_crime_heatmap.html")
         print("Current crime heatmap saved as current_crime_heatmap.html")
 
     def train(self):

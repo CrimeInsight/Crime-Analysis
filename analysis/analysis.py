@@ -11,7 +11,7 @@ import seaborn as sns
 
 
 class Analysis:
-    def __init__(self, path="Crime_Data_from_2020_to_Present.csv"):
+    def __init__(self, path="data\Crime_Data_from_2020_to_Present.csv"):
         # Shared dependencies
         self.pd = pd
         self.folium = folium
