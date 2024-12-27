@@ -1,13 +1,103 @@
 Data of the project is not in the repo itself, since it is too big. You will need to add "data" folder in the project in order to use, that we will provide...
 
-Documentation of Crime_Type_And_Weapon.py:
+# Crime_Type_And_Weapon
 
-The task can be split into three different parts: clean, train, and plot.
-  Clean: Cleaning uses the data_preparation function, which in turn uses other functions like filter, handle_missing_values, feature_engineering, split_data. The function also splits the data into train and test sets, this doesn't count as "cleaning" but it was put here for the simplicity of the overall code. As the names of the functions suggest, the data gets filtered, meaning it leaves only the necessary columns for the needed models, missing values get replaced with placeholder strings or numbers representing that the value is missing, then feature engineering is performed to transform the age and time of occurance columns. Finally the data is split two times, once for the weapon model and once for the crime type model.
-  Train: Training is the section where the ML models are built and evaluated. There are two models, one involves weapons, the other involves crime types. Training of these models is done with the help of model_weapon_training and model_crime_training functions respectively. The first function uses a Decision tree classifier to predict if a weapon was used or not for a specific crime, then it evaluates the result by calculating precision, recall and accuracy of the model. Predicting if a weapon was used during a crime can help lead the law enforcment forces in the right direction. The second function uses a Random forest classifier to predict what time of crime was committed, but since there are a lot of crime types, the function first filters the data and leaves only the top N most common crimes. This is done in order to make the result more understandable and readable, namely the confusion matrix will be of size 10x10 instead of 100+ x 100+. The model works without this filtering too and it was done only for visualizing purposes. Finally, the model is evaluated the same way as the previous one, and it has less accuracy compared the weapon model, but it's understandable because the weapon model only has two options of the output, while the crime type model has a lot. Predicting the crime type might speed up the investigation or help the law enforcment forces better understand the situation overall.
-  Plot: Plotting is the section where all the plots in this file happen. First, only the columns that have numeric values are left, then the outliers for the relevant plots are removed, then there are various plots about the original data, as well as the confusion matrices of the models built previously. The plots include: Histogram for columns representing the distribution of: Time of occurence, area, victim age, weapon used code; Box plot of victim age and time of occurence; Histogram of crime frequency by hour and victim age distribution; Box plot of victim age distribution by top 5 crime types; Histogram of crime frequency by area; Confusion matrices for both ML models.
+## Overview
 
+The `Crime_Type_And_Weapon.py` file tackles the problem of predicting whether a weapon was used in a crime and identifying the type of crime committed, based on various factors. This project is divided into three key sections: **Clean**, **Train**, and **Plot**. Each part of the process ensures that the data is properly handled, the models are accurately trained, and the results are visually interpreted.
 
+## Table of Contents
+1. [Clean](#clean)
+2. [Train](#train)
+3. [Plot](#plot)
+4. [Evaluation](#evaluation)
+5. [Real-World Application](#real-world-application)
+
+---
+
+## Clean
+
+The cleaning process prepares the data for model training, splitting it into train and test sets for two distinct tasks: weapon prediction and crime type prediction. The data preparation steps include:
+
+1. **Data Filtering**: 
+   - Removes unnecessary columns to keep only the relevant features needed for both models.
+
+2. **Handling Missing Values**: 
+   - Missing values are replaced with placeholder strings or numbers that indicate missing data.
+
+3. **Feature Engineering**:
+   - The `age` and `time of occurrence` columns are transformed for better model performance.
+
+4. **Data Splitting**: 
+   - The data is split into training and testing sets for both the weapon prediction model and the crime type prediction model. Although splitting is a form of data partitioning, it is categorized as part of the cleaning process for simplicity.
+
+---
+
+## Train
+
+### Weapon Prediction Model:
+- **Algorithm**: Decision Tree Classifier
+- **Goal**: Predict whether a weapon was used in a crime.
+- **Evaluation Metrics**: Precision, Recall, and Accuracy.
+
+### Crime Type Prediction Model:
+- **Algorithm**: Random Forest Classifier
+- **Goal**: Predict the type of crime (filtered to the top N most common crimes for clarity).
+- **Evaluation Metrics**: Precision, Recall, and Accuracy.
+- **Note**: The crime type model has more classes to predict, which may result in slightly lower accuracy compared to the weapon model, but it provides critical insights for law enforcement.
+
+---
+
+## Plot
+
+The plotting section visualizes both the raw data and model results, enabling a comprehensive understanding of the data and model performance.
+
+### Plots Included:
+1. **Histograms**:
+   - Distribution of `Time of Occurrence`
+   - Distribution of `Area`
+   - Distribution of `Victim Age`
+   - Frequency of `Weapon Used Code`
+   - Crime frequency by `Hour`
+
+2. **Box Plots**:
+   - `Victim Age`
+   - `Time of Occurrence`
+   - Victim age distribution by the top 5 crime types
+
+3. **Confusion Matrices**:
+   - One for the **Weapon Prediction Model**
+   - One for the **Crime Type Prediction Model**
+
+### Data Preprocessing for Plots:
+- Only numeric columns are retained for plotting.
+- Outliers in the relevant plots are removed to ensure more accurate visualizations.
+
+---
+
+## Evaluation
+
+The evaluation of the models involves calculating key performance metrics such as precision, recall, and accuracy. The results of the confusion matrices provide further insights into model performance. While the weapon model has a higher accuracy due to fewer output classes (two options), the crime type model can still offer significant insights despite a higher number of output classes.
+
+---
+
+## Real-World Application
+
+### Weapon Prediction:
+- **Impact**: Helps law enforcement identify whether a weapon was involved in a crime, guiding the investigation and improving safety protocols.
+
+### Crime Type Prediction:
+- **Impact**: Quickly categorizes crime types, speeding up law enforcement responses and improving overall situational understanding.
+
+---
+
+## Conclusion
+
+This project demonstrates how machine learning can be applied to crime data to assist law enforcement in predicting critical information, such as the involvement of a weapon and the type of crime. By leveraging decision trees and random forests, the models provide actionable insights that can enhance investigation efficiency.
+
+Feel free to explore the code and try it on your own dataset to gain more insights into crime prediction!
+
+---
 
 # Crime Analysis and Prediction System
 A system for analyzing crime data and predicting future crime patterns using machine learning techniques. This project combines Random Forest classification for crime type prediction and ARIMA modeling for time-series forecasting.
