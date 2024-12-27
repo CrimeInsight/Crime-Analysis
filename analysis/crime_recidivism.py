@@ -6,24 +6,33 @@ class CrimeRecidivism(Analysis):
         super().__init__(path)
 
     def clean(self):
-        # Data Loading and Cleaning
-        self.df = self.pd.read_csv(self.path)
+        try:
+            self.df = self.pd.read_csv(self.path)
+        except Exception as e:
+            print(f"Error loading CSV file: {e}")
+            return  
 
-        # Handle missing values
-        self.df.fillna(self.df.median(numeric_only=True), inplace=True)
-        self.df.fillna('Unknown', inplace=True)
+        try:
+            self.df.fillna(self.df.median(numeric_only=True), inplace=True)
+            self.df.fillna('Unknown', inplace=True)
+        except Exception as e:
+            print(f"Error handling missing values: {e}")
+            return  
 
-        # Handle outliers using IQR
-        for col in ['Age at Release', 'Release Year']:
-            q1 = self.df[col].quantile(0.25)
-            q3 = self.df[col].quantile(0.75)
-            iqr = q3 - q1
-            lower_bound = q1 - 1.5 * iqr
-            upper_bound = q3 + 1.5 * iqr
-            self.df[col] = self.np.clip(self.df[col], lower_bound, upper_bound)
+        try:
+            for col in ['Age at Release', 'Release Year']:
+                q1 = self.df[col].quantile(0.25)
+                q3 = self.df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                self.df[col] = self.np.clip(self.df[col], lower_bound, upper_bound)
+        except Exception as e:
+            print(f"Error handling outliers for columns {col}: {e}")
+            return
+
 
     def train(self):
-        # Data Preprocessing
         label_encoder = self.LabelEncoder()
         for col in ['County of Indictment', 'Gender', 'Crime Type']:
             self.df[col] = label_encoder.fit_transform(self.df[col])
@@ -33,7 +42,6 @@ class CrimeRecidivism(Analysis):
             self.df[['Age at Release', 'Release Year']]
         )
 
-        # Features and target
         X = self.df[['Release Year', 'County of Indictment', 'Gender', 'Age at Release', 'Crime Type']]
         y = self.df['Return Status']
 
