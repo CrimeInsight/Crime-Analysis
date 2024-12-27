@@ -22,25 +22,36 @@ class CrimeTypeAndWeapon(Analysis):
         self.model_crime_visualize(model_crime_type, X_test_crime, y_test_crime)
 
     def filter(self, data):
-        # the necessary columns for my part of the project
-        columns = ['Crm Cd Desc', 'Vict Sex', 'Premis Desc', 'TIME OCC', 'AREA', 'Vict Age', 'Weapon Used Cd']
+        try:
+            # the necessary columns for my part of the project
+            columns = ['Crm Cd Desc', 'Vict Sex', 'Premis Desc', 'TIME OCC', 'AREA', 'Vict Age', 'Weapon Used Cd']
 
-        # filter the dataset to include only these columns
-        return data[columns].copy()
+            # check if the dataset has all the columns we need
+            missing_columns = [col for col in columns if col not in data.columns]
+
+            if missing_columns:
+                raise ValueError(f"Missing columns: {missing_columns}")
+            # filter the dataset to include only these columns
+            return data[columns].copy()
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while filtering the dataset: {str(e)}")
 
     def handle_missing_values(self,data):
-        # first check for missing values
-        print("Missing values per column:\n", data.isnull().sum())
+        try:
+            # first check for missing values
+            print("Missing values per column:\n", data.isnull().sum())
 
-        # we see that a lot of rows have missing values, like victim sex, premise description, and weapon used code.
-        # this is because some of the crimes did not involve a victim, weapon, or did not occur at a premise
-        # because of this i fill these null values with a string representing that the value is not applicable
-        data['Vict Sex'] = data['Vict Sex'].fillna("Not Applicable")
-        data['Weapon Used Cd'] = data['Weapon Used Cd'].fillna(0)
-        data['Premis Desc'] = data['Premis Desc'].fillna("Unknown Premises")
+            # we see that a lot of rows have missing values, like victim sex, premise description, and weapon used code.
+            # this is because some of the crimes did not involve a victim, weapon, or did not occur at a premise
+            # because of this i fill these null values with a string representing that the value is not applicable
+            data['Vict Sex'] = data['Vict Sex'].fillna("Not Applicable")
+            data['Weapon Used Cd'] = data['Weapon Used Cd'].fillna(0)
+            data['Premis Desc'] = data['Premis Desc'].fillna("Unknown Premises")
 
-        # lets re-check the missing values
-        print("Missing values per column after adjustments:\n", data.isnull().sum())
+            # lets re-check the missing values
+            print("Missing values per column after adjustments:\n", data.isnull().sum())
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while handling missing values: {str(e)}")
 
     def feature_engineering(self,data):
         # next we transform the columns in the dataset to be more suitable for machine learning
@@ -51,13 +62,19 @@ class CrimeTypeAndWeapon(Analysis):
 
         # we iterate through these columns and apply label encoding
         for column in categorical_columns:
-            le = self.LabelEncoder()
-            return_data.loc[:, column] = le.fit_transform(return_data[column])
-            label_encoders[column] = le
+            try:
+                le = self.LabelEncoder()
+                return_data.loc[:, column] = le.fit_transform(return_data[column])
+                label_encoders[column] = le
+            except Exception as e:
+                raise RuntimeError(f"An error occurred while encoding column {column}: {str(e)}")
 
-        # we convert some columns to float64 to avoid issues with scaling
-        return_data['TIME OCC'] = return_data['TIME OCC'].astype('float64')
-        return_data['Vict Age'] = return_data['Vict Age'].astype('float64')
+        try:
+            # we convert some columns to float64 to avoid issues with scaling
+            return_data['TIME OCC'] = return_data['TIME OCC'].astype('float64')
+            return_data['Vict Age'] = return_data['Vict Age'].astype('float64')
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while converting columns to float64: {str(e)}")
 
         # then we go on to scale the numerical columns
         scaler = self.StandardScaler()
@@ -71,8 +88,12 @@ class CrimeTypeAndWeapon(Analysis):
         if column == 'Weapon Used Cd':
             y = data[column].apply(lambda x: 1 if x > 0 else 0)
         elif column == 'Crm Cd Desc':
-            y = data[column].astype('category').cat.codes
-        
+            try:
+                y = data[column].astype('category').cat.codes
+            except Exception as e:
+                raise RuntimeError(f"An error occurred while encoding column {column}: {str(e)}")
+        else:
+            raise ValueError(f"Invalid column: {column}")
         # X will be everything except the column we're predicting, it's also called the features
         X = data.drop(columns=[column])
 
@@ -95,25 +116,37 @@ class CrimeTypeAndWeapon(Analysis):
         return data_filtered, X_train_weapon, X_test_weapon, y_train_weapon, y_test_weapon, X_train_crime, X_test_crime, y_train_crime, y_test_crime
 
     def model_weapon_training(self,X_train, X_test, y_train, y_test):
-        # we train a decision tree classifier to predict if a weapon was used or not
-        model_weapon = self.DecisionTreeClassifier(random_state=42)
-        model_weapon.fit(X_train, y_train)
+        try:
+            # we train a decision tree classifier to predict if a weapon was used or not
+            model_weapon = self.DecisionTreeClassifier(random_state=42)
+            model_weapon.fit(X_train, y_train)
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while training the model: {str(e)}")
 
-        # this is our prediction
-        y_pred_weapon = model_weapon.predict(X_test)
-
-        # let's evaluate the model's performance
-        print("Weapon prediction - Classification report:")
-        print(self.classification_report(y_test, y_pred_weapon))
-        print("Weapon prediction - Accuracy:", self.accuracy_score(y_test, y_pred_weapon))
+        try:
+            # this is our prediction
+            y_pred_weapon = model_weapon.predict(X_test)
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while predicting the model: {str(e)}")
+        
+        try:
+            # let's evaluate the model's performance
+            print("Weapon prediction - Classification report:")
+            print(self.classification_report(y_test, y_pred_weapon))
+            print("Weapon prediction - Accuracy:", self.accuracy_score(y_test, y_pred_weapon))
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while evaluating the model: {str(e)}")
         
         return model_weapon
 
     def model_weapon_visualize(self,model_weapon, X_test_weapon, y_test_weapon):
-        # display the confusion matrix that shows how well the model predicts if a weapon was used or not
-        self.ConfusionMatrixDisplay.from_estimator(model_weapon, X_test_weapon, y_test_weapon)
-        self.plt.title("Weapon prediction confusion matrix")
-        self.plt.show()
+        try:
+            # display the confusion matrix that shows how well the model predicts if a weapon was used or not
+            self.ConfusionMatrixDisplay.from_estimator(model_weapon, X_test_weapon, y_test_weapon)
+            self.plt.title("Weapon prediction confusion matrix")
+            self.plt.show()
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while visualizing the model: {str(e)}")
 
     def model_crime_training(self,X_train, X_test, y_train, y_test):
         # filter the data to include only the crime types with at least threshold amount of support
@@ -132,18 +165,27 @@ class CrimeTypeAndWeapon(Analysis):
         X_test_filtered = X_test[test_mask]
         y_test_filtered = y_test[test_mask]
 
-        # we use a random forest classifier to predict the type of the crime
-        model_crime_type = self.RandomForestClassifier(random_state=42)
-        model_crime_type.fit(X_train_filtered, y_train_filtered)
+        try:
+            # we use a random forest classifier to predict the type of the crime
+            model_crime_type = self.RandomForestClassifier(random_state=42)
+            model_crime_type.fit(X_train_filtered, y_train_filtered)
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while training the model: {str(e)}")
+        
+        try:
+            # this is our prediction
+            y_pred_filtered = model_crime_type.predict(X_test_filtered)
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while predicting the model: {str(e)}")
 
-        # this is our prediction
-        y_pred_filtered = model_crime_type.predict(X_test_filtered)
-
-        # let's evaluate the model's performance
-        print("Crime type prediction - Classification report:")
-        print(self.classification_report(y_test_filtered, y_pred_filtered, zero_division=1, labels=valid_classes))
-        print("Crime type prediction - Accuracy:", self.accuracy_score(y_test_filtered, y_pred_filtered))
-
+        try:
+            # let's evaluate the model's performance
+            print("Crime type prediction - Classification report:")
+            print(self.classification_report(y_test_filtered, y_pred_filtered, zero_division=1, labels=valid_classes))
+            print("Crime type prediction - Accuracy:", self.accuracy_score(y_test_filtered, y_pred_filtered))
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while evaluating the model: {str(e)}")
+        
         return model_crime_type
 
     def model_crime_visualize(self,model_crime_type, X_test_crime, y_test_crime):
@@ -161,9 +203,12 @@ class CrimeTypeAndWeapon(Analysis):
         X_test_filtered = X_test_crime[mask]
         y_test_filtered = y_test_crime[mask]
 
-        # predict the crime types
-        y_pred_filtered = model_crime_type.predict(X_test_filtered)
-
+        try:
+            # predict the crime types
+            y_pred_filtered = model_crime_type.predict(X_test_filtered)
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while predicting the model: {str(e)}")
+        
         # make sure the predictions are only from top N crime types
         mask_pred = self.np.isin(y_pred_filtered, top_n_types)
         y_test_filtered = y_test_filtered[mask_pred]
@@ -175,19 +220,22 @@ class CrimeTypeAndWeapon(Analysis):
         y_test_mapped = self.np.array([label_map[label] for label in y_test_filtered])
         y_pred_mapped = self.np.array([label_map[label] for label in y_pred_filtered])
         
-        # display the confusion matrix
-        disp = self.ConfusionMatrixDisplay.from_predictions(
-            y_test_mapped,
-            y_pred_mapped,
-            display_labels=top_n_types,
-            xticks_rotation=45,
-            cmap='Blues'
-        )
-        disp.figure_.set_size_inches(8, 6)
-        self.plt.title("Crime type prediction confusion matrix (top 10 classes)")
-        self.plt.tight_layout()
-        self.plt.show()
-
+        try:
+            # display the confusion matrix
+            disp = self.ConfusionMatrixDisplay.from_predictions(
+                y_test_mapped,
+                y_pred_mapped,
+                display_labels=top_n_types,
+                xticks_rotation=45,
+                cmap='Blues'
+            )
+            disp.figure_.set_size_inches(8, 6)
+            self.plt.title("Crime type prediction confusion matrix (top 10 classes)")
+            self.plt.tight_layout()
+            self.plt.show()
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while visualizing the model: {str(e)}")
+        
     def remove_outliers(self,column):
         # remove outliers from the column using the IQR method
         Q1 = column.quantile(0.25)
@@ -207,55 +255,59 @@ class CrimeTypeAndWeapon(Analysis):
 
         numeric_data = data[numeric_columns]
         
-        # histograms for numerical columns in the dataset
-        numeric_data.hist(bins=30, edgecolor='black')
-        self.plt.suptitle('Histograms of data')
-        self.plt.show()
+        try:
+            # histograms for numerical columns in the dataset
+            numeric_data.hist(bins=30, edgecolor='black')
+            self.plt.suptitle('Histograms of data')
+            self.plt.show()
 
-        # box plot for victim age
-        self.plt.figure(figsize=(10, 6))
-        self.sns.boxplot(data=data['Vict Age'])
-        self.plt.title('Box plot of data')
-        self.plt.show()
+            # histogram for crime frequency by hour
+            self.plt.figure(figsize=(10, 6))
+            self.sns.histplot(data['TIME OCC'], bins=24, kde=False, color='blue')
+            self.plt.title('Crime frequency by hour')
+            self.plt.xlabel('Hour of occurrence')
+            self.plt.ylabel('Number of crimes')
+            self.plt.show()
 
-        # box plot for time of occurence
-        self.plt.figure(figsize=(10, 6))
-        self.sns.boxplot(data=data['TIME OCC'])
-        self.plt.title('Box plot of data')
-        self.plt.show()
+            # histogram for victim age distribution
+            self.plt.figure(figsize=(10, 6))
+            self.sns.histplot(data['Vict Age'], bins=20, kde=True, color='green')
+            self.plt.title('Victim age distribution')
+            self.plt.xlabel('Age')
+            self.plt.ylabel('Number of victims')
+            self.plt.show()
 
-        # histogram for crime frequency by hour
-        self.plt.figure(figsize=(10, 6))
-        self.sns.histplot(data['TIME OCC'], bins=24, kde=False, color='blue')
-        self.plt.title('Crime frequency by hour')
-        self.plt.xlabel('Hour of occurrence')
-        self.plt.ylabel('Number of crimes')
-        self.plt.show()
-
-        # histogram for victim age distribution
-        self.plt.figure(figsize=(10, 6))
-        self.sns.histplot(data['Vict Age'], bins=20, kde=True, color='green')
-        self.plt.title('Victim age distribution')
-        self.plt.xlabel('Age')
-        self.plt.ylabel('Number of victims')
-        self.plt.show()
-
-        # box plot for victim age distribution by top crime types
-        self.plt.figure(figsize=(12, 8))
-        top_crimes = data['Crm Cd Desc'].value_counts().head(5).index
-        self.sns.boxplot(x='Crm Cd Desc', y='Vict Age', data=data[data['Crm Cd Desc'].isin(top_crimes)], palette='Set3', hue='Crm Cd Desc', legend=False)
-        self.plt.title('Victim age distribution by top crime types')
-        self.plt.xlabel('Crime type')
-        self.plt.ylabel('Victim age')
-        self.plt.xticks(rotation=45)
-        self.plt.show()
-
-        # histogram for crime frequency by area
-        self.plt.figure(figsize=(10, 6))
-        self.sns.histplot(data['AREA'], bins=15, kde=False, color='purple')
-        self.plt.title('Crime frequency by area')
-        self.plt.xlabel('Area')
-        self.plt.ylabel('Number of crimes')
-        self.plt.show()
-
+            # histogram for crime frequency by area
+            self.plt.figure(figsize=(10, 6))
+            self.sns.histplot(data['AREA'], bins=15, kde=False, color='purple')
+            self.plt.title('Crime frequency by area')
+            self.plt.xlabel('Area')
+            self.plt.ylabel('Number of crimes')
+            self.plt.show()
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while plotting the histograms: {str(e)}")
         
+        try:
+            # box plot for victim age
+            self.plt.figure(figsize=(10, 6))
+            self.sns.boxplot(data=data['Vict Age'])
+            self.plt.title('Box plot of data')
+            self.plt.show()
+        
+            # box plot for time of occurence
+            self.plt.figure(figsize=(10, 6))
+            self.sns.boxplot(data=data['TIME OCC'])
+            self.plt.title('Box plot of data')
+            self.plt.show()
+
+            # box plot for victim age distribution by top crime types
+            self.plt.figure(figsize=(12, 8))
+            top_crimes = data['Crm Cd Desc'].value_counts().head(5).index
+            self.sns.boxplot(x='Crm Cd Desc', y='Vict Age', data=data[data['Crm Cd Desc'].isin(top_crimes)], palette='Set3', hue='Crm Cd Desc', legend=False)
+            self.plt.title('Victim age distribution by top crime types')
+            self.plt.xlabel('Crime type')
+            self.plt.ylabel('Victim age')
+            self.plt.xticks(rotation=45)
+            self.plt.show()
+        except Exception as e:
+            raise RuntimeError(f"An error occurred while plotting the box plots: {str(e)}")
